@@ -65,8 +65,10 @@ AVEditor::AVEditor (AVProcessor& p)
 
     // ---- Top bar ----
     for (auto* b : { &undoBtn, &redoBtn, &prevPresetBtn, &nextPresetBtn, &saveBtn, &initBtn,
-                     &pinBtn, &openOutBtn, &fullscreenBtn, &helpBtn })
+                     &pinBtn, &openOutBtn, &fullscreenBtn, &helpBtn, &aboutBtn })
         addAndMakeVisible (b);
+    aboutBtn.setTooltip ("About AudioVisualizer by mtyas: website, Ko-fi, source code and credits");
+    aboutBtn.onClick = [this] { showAbout(); };
     addAndMakeVisible (presetCombo);
 
     undoBtn.setTooltip ("Undo the last change (Ctrl+Z)");
@@ -198,6 +200,18 @@ AVEditor::~AVEditor()
     if (floatingModWindow != nullptr)
         floatingModWindow->setLookAndFeel (nullptr);
     setLookAndFeel (nullptr);
+}
+
+void AVEditor::showAbout()
+{
+    juce::CallOutBox::launchAsynchronously (std::make_unique<AboutContent>(), aboutBtn.getScreenBounds(), nullptr);
+}
+
+void AVEditor::mouseDown (const juce::MouseEvent& e)
+{
+    // The logo / name in the top-left corner opens the About card too
+    if (e.getPosition().x < kRail && e.getPosition().y < kTopBar)
+        showAbout();
 }
 
 void AVEditor::ensureOutput()
@@ -467,7 +481,7 @@ void AVEditor::paint (juce::Graphics& g)
     g.drawText ("AudioVisualizer", 58, 8, kRail - 60, 22, juce::Justification::centredLeft);
     g.setColour (textMuted);
     g.setFont (font (10.5f));
-    g.drawText ("Sound-reactive visuals", 58, 28, kRail - 60, 16, juce::Justification::centredLeft);
+    g.drawText ("by mtyas", 58, 28, kRail - 60, 16, juce::Justification::centredLeft);
 
     // ---- Left rail ----
     auto rail = juce::Rectangle<int> (0, kTopBar, kRail, getHeight() - kTopBar - kStatus);
@@ -607,6 +621,9 @@ void AVEditor::resized()
     const int cell = (kRail - 24) / 4;
     for (int i = 0; i < 8; ++i)
         macroSliders[i].setBounds (12 + (i % 4) * cell + (cell - 40) / 2, macroTop + (i / 4) * 58, 40, 40);
+
+    // About button at the foot of the rail
+    aboutBtn.setBounds (12, getHeight() - kStatus - 36, kRail - 24, 28);
 
     // ---- Page area ----
     auto content = juce::Rectangle<int> (kRail + 8, kTopBar + kPageHeader, getWidth() - kRail - 16,

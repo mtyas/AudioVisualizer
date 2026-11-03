@@ -167,6 +167,135 @@ private:
     std::vector<SearchEntry> results;
 };
 
+// Flat link button used on the About page.
+class LinkButton final : public juce::Button
+{
+public:
+    LinkButton (const juce::String& text, juce::Colour colour, const juce::String& url)
+        : juce::Button (text), label (text), accent (colour), target (url)
+    {
+        setMouseCursor (juce::MouseCursor::PointingHandCursor);
+        setTooltip (url);
+        onClick = [url] { juce::URL (url).launchInDefaultBrowser(); };
+    }
+
+    void paintButton (juce::Graphics& g, bool hot, bool down) override
+    {
+        using namespace avtheme;
+        auto r = getLocalBounds().toFloat().reduced (1.0f);
+        g.setColour (accent.withAlpha (down ? 0.35f : (hot ? 0.28f : 0.18f)));
+        g.fillRoundedRectangle (r, 8.0f);
+        g.setColour (accent.withAlpha (hot ? 1.0f : 0.8f));
+        g.drawRoundedRectangle (r, 8.0f, 1.2f);
+        g.setColour (textBright);
+        g.setFont (font (13.5f, true));
+        g.drawText (label, getLocalBounds().withTrimmedLeft (4), juce::Justification::centred);
+    }
+
+private:
+    juce::String label;
+    juce::Colour accent;
+    juce::String target;
+};
+
+// "About & support" card: who made it, where to find more, how to help.
+class AboutContent final : public juce::Component
+{
+public:
+    static constexpr const char* kWebsite = "https://mtyas.com";
+    static constexpr const char* kKofi    = "https://ko-fi.com/mtyas";
+    static constexpr const char* kRepo    = "https://github.com/mtyas/AudioVisualizer";
+
+    AboutContent()
+    {
+        setSize (500, 460);
+        struct Item { const char* text; juce::uint32 col; const char* url; };
+        static const Item items[] = {
+            { "Visit mtyas.com",                 0xff40d9ee, kWebsite },
+            { "Support me on Ko-fi",             0xffff5e5b, kKofi },
+            { "Source code on GitHub",           0xffa98bfb, kRepo },
+            { "Report a bug / request a feature", 0xfff7b93e, "https://github.com/mtyas/AudioVisualizer/issues" },
+        };
+        for (const auto& it : items)
+        {
+            buttons.push_back (std::make_unique<LinkButton> (it.text, juce::Colour (it.col), it.url));
+            addAndMakeVisible (*buttons.back());
+        }
+        resized(); // setSize() above ran before the buttons existed
+    }
+
+    void paint (juce::Graphics& g) override
+    {
+        using namespace avtheme;
+        g.fillAll (bgRaised);
+        auto r = getLocalBounds().reduced (26, 22);
+
+        auto logo = juce::Rectangle<float> ((float) r.getX(), (float) r.getY(), 64.0f, 64.0f);
+        g.setGradientFill (juce::ColourGradient (accentCyan, logo.getX(), logo.getY(), accentPurple, logo.getRight(), logo.getBottom(), false));
+        g.fillRoundedRectangle (logo, 18.0f);
+        g.setColour (bgDark.withAlpha (0.85f));
+        const float bars[] = { 0.45f, 0.8f, 0.6f, 0.95f, 0.5f };
+        for (int i = 0; i < 5; ++i)
+        {
+            const float bh = 40.0f * bars[i];
+            g.fillRoundedRectangle (logo.getX() + 12.0f + (float) i * 8.6f, logo.getCentreY() - bh * 0.5f, 5.5f, bh, 2.5f);
+        }
+
+        auto text = r.withTrimmedLeft (82);
+        g.setColour (textBright);
+        g.setFont (font (24.0f, true));
+        g.drawText ("AudioVisualizer", text.removeFromTop (32), juce::Justification::centredLeft);
+        g.setColour (accentCyan);
+        g.setFont (font (15.0f, true));
+        g.drawText ("by mtyas", text.removeFromTop (22), juce::Justification::centredLeft);
+        g.setColour (textMuted);
+        g.setFont (font (12.0f));
+       #ifdef JucePlugin_VersionString
+        const juce::String version (JucePlugin_VersionString);
+       #else
+        const juce::String version ("0.77");
+       #endif
+        g.drawText ("Version " + version, text.removeFromTop (18), juce::Justification::centredLeft);
+
+        r.removeFromTop (84);
+        g.setColour (textNormal);
+        g.setFont (font (13.0f));
+        g.drawFittedText ("A sound-reactive visual plugin for VST3, CLAP, AU and standalone use. "
+                          "Stack layers, animate them with audio, MIDI, LFOs and your webcam, and send the picture to a window "
+                          "that stays on top of your DAW.",
+                          r.removeFromTop (66), juce::Justification::topLeft, 4);
+
+        g.setColour (textBright);
+        g.setFont (font (13.5f, true));
+        g.drawText ("Find me & say thanks", r.withTop (r.getY() + 4).removeFromTop (24), juce::Justification::centredLeft);
+
+        // footer
+        auto foot = getLocalBounds().reduced (26, 0).removeFromBottom (74);
+        g.setColour (border);
+        g.drawHorizontalLine (foot.getY(), (float) foot.getX(), (float) foot.getRight());
+        g.setColour (textMuted);
+        g.setFont (font (11.5f));
+        g.drawFittedText ("Free and open source. Engine under AGPLv3; the Content Pack (shaders, scripts, models, presets) is MIT / CC0.\n"
+                          "Built with JUCE, clap-juce-extensions and tinygltf.",
+                          foot.reduced (0, 8), juce::Justification::centredLeft, 3);
+    }
+
+    void resized() override
+    {
+        auto r = getLocalBounds().reduced (26, 0);
+        r.removeFromTop (22 + 84 + 66 + 32);
+        const int h = 40, gap = 10;
+        for (auto& b : buttons)
+        {
+            b->setBounds (r.removeFromTop (h));
+            r.removeFromTop (gap);
+        }
+    }
+
+private:
+    std::vector<std::unique_ptr<LinkButton>> buttons;
+};
+
 // "How it works" card shown from the ? button.
 class HelpContent final : public juce::Component
 {

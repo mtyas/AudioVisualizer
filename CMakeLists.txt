@@ -27,7 +27,10 @@ if(APPLE)
 endif()
 
 juce_add_plugin(AudioVisualizer
-    COMPANY_NAME "AudioVisualizer"
+    COMPANY_NAME "mtyas"
+    COMPANY_WEBSITE "https://mtyas.com"
+    COMPANY_COPYRIGHT "(c) 2026 mtyas"
+    DESCRIPTION "Sound-reactive visuals by mtyas"
     PLUGIN_MANUFACTURER_CODE Avzr
     PLUGIN_CODE Avz1
     FORMATS VST3 ${AU_FORMAT} Standalone

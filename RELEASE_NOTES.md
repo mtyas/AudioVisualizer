@@ -1,6 +1,6 @@
 # AudioVisualizer 0.77
 
-First public release. A sound-reactive visual plugin (VST3 / CLAP / AU / Standalone) with its own output window.
+First public release, by [mtyas](https://mtyas.com) ([Ko-fi](https://ko-fi.com/mtyas)). The plugin has an **About & support** page with the same links. A sound-reactive visual plugin (VST3 / CLAP / AU / Standalone) with its own output window.
 
 ## Highlights
 - **Up to 13 layers, you choose the kind:** 3D scene, 2D shader, spectrum analyzer, gradient / fill, video & loop, webcam FX and text.

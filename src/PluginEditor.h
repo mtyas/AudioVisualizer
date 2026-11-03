@@ -20,6 +20,7 @@ public:
     void paint (juce::Graphics&) override;
     void resized() override;
     bool keyPressed (const juce::KeyPress&) override;
+    void mouseDown (const juce::MouseEvent&) override;
 
 private:
     // Page order follows the workflow: compose -> style -> animate -> patch -> library
@@ -28,6 +29,7 @@ private:
     void timerCallback() override;
     void selectPage (int page);
     void openFloatingModWindow();
+    void showAbout();
     void ensureOutput();
     void rebuildPresetCombo();
     void buildSearchIndex();
@@ -54,6 +56,7 @@ private:
     SearchField searchBox;
     SearchResultsList searchResults;
     std::vector<SearchEntry> searchIndex;
+    juce::TextButton aboutBtn { "About & support" };
     juce::TextButton pinBtn { "Always on top" }, openOutBtn { "Open Output" }, fullscreenBtn { "Fullscreen" }, helpBtn { "?" };
 
     // Left rail
