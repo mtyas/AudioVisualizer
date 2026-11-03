@@ -1,0 +1,5 @@
+-- Luau / Lua-style stateful modulation script for Node Graph
+-- Inputs: x (in0), y (in1), t (time), dt, a (Param A), b (Param B), env, trans, beat, s (state)
+s = s * 0.90 + x * 0.10
+local carrier = sin(t * a * 6.28318 + s * 8.0) * 0.5 + 0.5
+out = clamp(carrier * b + y * 0.35 + trans * 0.4, 0.0, 1.5)
